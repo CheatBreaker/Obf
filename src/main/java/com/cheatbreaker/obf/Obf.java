@@ -8,6 +8,7 @@ import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.InsnNode;
+import org.objectweb.asm.tree.IntInsnNode;
 import org.objectweb.asm.tree.LdcInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 
@@ -75,6 +76,10 @@ public class Obf {
                         } else if (ldc.cst instanceof Float) {
                             obfuscateLdcFloat(iter, ldc, method.instructions);
                         }
+                        break;
+                    case Opcodes.SIPUSH:
+                        IntInsnNode sipush = (IntInsnNode) insn;
+                        obfuscateSipush(iter, sipush, method.instructions);
                         break;
                 }
             }
@@ -155,5 +160,22 @@ public class Obf {
             instructions.insertBefore(ldc, insns);
             iter.remove();
         }
+    }
+
+    private void obfuscateSipush(Iterator<AbstractInsnNode> iter, IntInsnNode sipush, InsnList instructions) {
+        int si = sipush.operand;
+        int xor = random.nextInt() & 0xFFFF;
+        System.out.println(xor);
+        InsnList insns = new InsnList();
+        if (random.nextBoolean()) {
+            insns.add(new IntInsnNode(Opcodes.SIPUSH, si ^ xor));
+            insns.add(new IntInsnNode(Opcodes.SIPUSH, xor));
+        } else {
+            insns.add(new IntInsnNode(Opcodes.SIPUSH, xor));
+            insns.add(new IntInsnNode(Opcodes.SIPUSH, si ^ xor));
+        }
+        insns.add(new InsnNode(Opcodes.IXOR));
+        instructions.insertBefore(sipush, insns);
+        iter.remove();
     }
 }
