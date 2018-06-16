@@ -1,5 +1,6 @@
 package com.cheatbreaker.obf;
 
+import com.cheatbreaker.obf.utils.RandomUtils;
 import com.cheatbreaker.obf.utils.StreamUtils;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -94,13 +95,7 @@ public class Obf {
         int cst = (int) ldc.cst;
         int xor = random.nextInt();
         InsnList insns = new InsnList();
-        if (random.nextBoolean()) {
-            insns.add(new LdcInsnNode(cst ^ xor));
-            insns.add(new LdcInsnNode(xor));
-        } else {
-            insns.add(new LdcInsnNode(xor));
-            insns.add(new LdcInsnNode(cst ^ xor));
-        }
+        RandomUtils.swap(random, new LdcInsnNode(cst ^ xor), new LdcInsnNode(xor)).forEach(insns::add);
         insns.add(new InsnNode(Opcodes.IXOR));
         instructions.insertBefore(ldc, insns);
         iter.remove();
@@ -110,13 +105,7 @@ public class Obf {
         long cst = (long) ldc.cst;
         long xor = random.nextLong();
         InsnList insns = new InsnList();
-        if (random.nextBoolean()) {
-            insns.add(new LdcInsnNode(cst ^ xor));
-            insns.add(new LdcInsnNode(xor));
-        } else {
-            insns.add(new LdcInsnNode(xor));
-            insns.add(new LdcInsnNode(cst ^ xor));
-        }
+        RandomUtils.swap(random, new LdcInsnNode(cst ^ xor), new LdcInsnNode(xor)).forEach(insns::add);
         insns.add(new InsnNode(Opcodes.LXOR));
         instructions.insertBefore(ldc, insns);
         iter.remove();
@@ -128,13 +117,7 @@ public class Obf {
         if (icst == cst) {
             int xor = random.nextInt();
             InsnList insns = new InsnList();
-            if (random.nextBoolean()) {
-                insns.add(new LdcInsnNode(icst ^ xor));
-                insns.add(new LdcInsnNode(xor));
-            } else {
-                insns.add(new LdcInsnNode(xor));
-                insns.add(new LdcInsnNode(icst ^ xor));
-            }
+            RandomUtils.swap(random, new LdcInsnNode(icst ^ xor), new LdcInsnNode(xor)).forEach(insns::add);
             insns.add(new InsnNode(Opcodes.IXOR));
             insns.add(new InsnNode(Opcodes.I2F));
             instructions.insertBefore(ldc, insns);
@@ -144,8 +127,7 @@ public class Obf {
                 float multiplier = (float) (random.nextInt(99) + 1) / (float) (random.nextInt(99) + 1);
                 if (cst / multiplier * multiplier == cst) {
                     InsnList insns = new InsnList();
-                    insns.add(new LdcInsnNode(cst / multiplier));
-                    insns.add(new LdcInsnNode(multiplier));
+                    RandomUtils.swap(random, new LdcInsnNode(cst / multiplier), new LdcInsnNode(multiplier)).forEach(insns::add);
                     insns.add(new InsnNode(Opcodes.FMUL));
                     instructions.insertBefore(ldc, insns);
                     iter.remove();
@@ -161,13 +143,7 @@ public class Obf {
         if (icst == cst) {
             int xor = random.nextInt();
             InsnList insns = new InsnList();
-            if (random.nextBoolean()) {
-                insns.add(new LdcInsnNode(icst ^ xor));
-                insns.add(new LdcInsnNode(xor));
-            } else {
-                insns.add(new LdcInsnNode(xor));
-                insns.add(new LdcInsnNode(icst ^ xor));
-            }
+            RandomUtils.swap(random, new LdcInsnNode(icst ^ xor), new LdcInsnNode(xor)).forEach(insns::add);
             insns.add(new InsnNode(Opcodes.IXOR));
             insns.add(new InsnNode(Opcodes.I2D));
             instructions.insertBefore(ldc, insns);
@@ -177,8 +153,7 @@ public class Obf {
                 double multiplier = (float) (random.nextInt(99) + 1) / (float) (random.nextInt(99) + 1);
                 if (cst / multiplier * multiplier == cst) {
                     InsnList insns = new InsnList();
-                    insns.add(new LdcInsnNode(cst / multiplier));
-                    insns.add(new LdcInsnNode(multiplier));
+                    RandomUtils.swap(random, new LdcInsnNode(cst / multiplier), new LdcInsnNode(multiplier)).forEach(insns::add);
                     insns.add(new InsnNode(Opcodes.DMUL));
                     instructions.insertBefore(ldc, insns);
                     iter.remove();
@@ -192,13 +167,7 @@ public class Obf {
         int si = sipush.operand;
         int xor = random.nextInt() & 0xFFFF;
         InsnList insns = new InsnList();
-        if (random.nextBoolean()) {
-            insns.add(new IntInsnNode(Opcodes.SIPUSH, si ^ xor));
-            insns.add(new IntInsnNode(Opcodes.SIPUSH, xor));
-        } else {
-            insns.add(new IntInsnNode(Opcodes.SIPUSH, xor));
-            insns.add(new IntInsnNode(Opcodes.SIPUSH, si ^ xor));
-        }
+        RandomUtils.swap(random, new IntInsnNode(Opcodes.SIPUSH, si ^ xor), new IntInsnNode(Opcodes.SIPUSH, xor)).forEach(insns::add);
         insns.add(new InsnNode(Opcodes.IXOR));
         instructions.insertBefore(sipush, insns);
         iter.remove();
