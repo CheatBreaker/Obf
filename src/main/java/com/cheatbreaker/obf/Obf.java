@@ -1,5 +1,6 @@
 package com.cheatbreaker.obf;
 
+import com.cheatbreaker.obf.utils.AsmUtils;
 import com.cheatbreaker.obf.utils.RandomUtils;
 import com.cheatbreaker.obf.utils.StreamUtils;
 import org.objectweb.asm.ClassReader;
@@ -7,18 +8,23 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.InsnNode;
 import org.objectweb.asm.tree.IntInsnNode;
 import org.objectweb.asm.tree.LdcInsnNode;
+import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
+import org.objectweb.asm.tree.TypeInsnNode;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Random;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -27,9 +33,12 @@ import java.util.jar.JarOutputStream;
 public class Obf {
 
     private final Random random;
+    private List<String> strings = new ArrayList<>();
 
     public Obf(File inputFile, File outputFile) {
         random = new Random();
+
+        ClassLoader classLoader = getClass().getClassLoader();
 
         try {
             JarFile inputJar = new JarFile(inputFile);
@@ -47,6 +56,10 @@ public class Obf {
                         out.putNextEntry(new JarEntry(entry.getName()));
                         out.write(data);
                     }
+                }
+                out.putNextEntry(new JarEntry("com/cheatbreaker/obf/Strings.class"));
+                try (InputStream in = classLoader.getResourceAsStream("com/cheatbreaker/obf/Strings.class")) {
+                    out.write(processStringsClass(in));
                 }
             }
         } catch (IOException ex) {
@@ -76,6 +89,8 @@ public class Obf {
                             obfuscateLdcDouble(iter, ldc, method.instructions);
                         } else if (ldc.cst instanceof Float) {
                             obfuscateLdcFloat(iter, ldc, method.instructions);
+                        } else if (ldc.cst instanceof String) {
+                            obfuscateLdcString(iter, ldc, method.instructions);
                         }
                         break;
                     case Opcodes.SIPUSH:
@@ -87,6 +102,32 @@ public class Obf {
         }
 
         ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+        classNode.accept(writer);
+        return writer.toByteArray();
+    }
+
+    private byte[] processStringsClass(InputStream in) throws IOException {
+        ClassReader reader = new ClassReader(in);
+        ClassNode classNode = new ClassNode();
+        reader.accept(classNode, 0);
+
+        for (MethodNode method : classNode.methods) {
+            if (method.name.equals("<clinit>")) {
+                method.instructions.clear();
+                method.instructions.add(AsmUtils.pushInt(strings.size()));
+                method.instructions.add(new TypeInsnNode(Opcodes.ANEWARRAY, "java/lang/String"));
+                for (int i = 0; i < strings.size(); i++) {
+                    method.instructions.add(new InsnNode(Opcodes.DUP));
+                    method.instructions.add(AsmUtils.pushInt(i));
+                    method.instructions.add(new LdcInsnNode(strings.get(i)));
+                    method.instructions.add(new InsnNode(Opcodes.AASTORE));
+                }
+                method.instructions.add(new FieldInsnNode(Opcodes.PUTSTATIC, "com/cheatbreaker/obf/Strings", "strings", "[Ljava/lang/String;"));
+                method.instructions.add(new InsnNode(Opcodes.RETURN));
+            }
+        }
+
+        ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
         classNode.accept(writer);
         return writer.toByteArray();
     }
@@ -161,6 +202,23 @@ public class Obf {
                 }
             }
         }
+    }
+
+    private void obfuscateLdcString(Iterator<AbstractInsnNode> iter, LdcInsnNode ldc, InsnList instructions) {
+        String string = (String) ldc.cst;
+        int stringId = strings.indexOf(string);
+        if (stringId == -1) {
+            stringId = strings.size();
+            strings.add(string);
+        }
+        InsnList insns = new InsnList();
+        insns.add(new FieldInsnNode(Opcodes.GETSTATIC, "com/cheatbreaker/obf/Strings", "strings", "[Ljava/lang/String;"));
+        int xor = random.nextInt();
+        RandomUtils.swap(random, new LdcInsnNode(stringId ^ xor), new LdcInsnNode(xor)).forEach(insns::add);
+        insns.add(new InsnNode(Opcodes.IXOR));
+        insns.add(new InsnNode(Opcodes.AALOAD));
+        instructions.insertBefore(ldc, insns);
+        iter.remove();
     }
 
     private void obfuscateSipush(Iterator<AbstractInsnNode> iter, IntInsnNode sipush, InsnList instructions) {
