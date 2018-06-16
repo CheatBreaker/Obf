@@ -139,6 +139,19 @@ public class Obf {
             insns.add(new InsnNode(Opcodes.I2F));
             instructions.insertBefore(ldc, insns);
             iter.remove();
+        } else {
+            for (int retry = 0; retry < 10; retry++) {
+                float multiplier = (float) (random.nextInt(99) + 1) / (float) (random.nextInt(99) + 1);
+                if (cst / multiplier * multiplier == cst) {
+                    InsnList insns = new InsnList();
+                    insns.add(new LdcInsnNode(cst / multiplier));
+                    insns.add(new LdcInsnNode(multiplier));
+                    insns.add(new InsnNode(Opcodes.FMUL));
+                    instructions.insertBefore(ldc, insns);
+                    iter.remove();
+                    break;
+                }
+            }
         }
     }
 
@@ -159,6 +172,19 @@ public class Obf {
             insns.add(new InsnNode(Opcodes.I2D));
             instructions.insertBefore(ldc, insns);
             iter.remove();
+        } else {
+            for (int retry = 0; retry < 10; retry++) {
+                double multiplier = (float) (random.nextInt(99) + 1) / (float) (random.nextInt(99) + 1);
+                if (cst / multiplier * multiplier == cst) {
+                    InsnList insns = new InsnList();
+                    insns.add(new LdcInsnNode(cst / multiplier));
+                    insns.add(new LdcInsnNode(multiplier));
+                    insns.add(new InsnNode(Opcodes.DMUL));
+                    instructions.insertBefore(ldc, insns);
+                    iter.remove();
+                    break;
+                }
+            }
         }
     }
 
