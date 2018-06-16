@@ -144,19 +144,19 @@ public class Obf {
 
     private void obfuscateLdcDouble(Iterator<AbstractInsnNode> iter, LdcInsnNode ldc, InsnList instructions) {
         double cst = (double) ldc.cst;
-        long lcst = (long) cst;
-        if (lcst == cst) {
-            long xor = random.nextLong();
+        int icst = (int) cst;
+        if (icst == cst) {
+            int xor = random.nextInt();
             InsnList insns = new InsnList();
             if (random.nextBoolean()) {
-                insns.add(new LdcInsnNode(lcst ^ xor));
+                insns.add(new LdcInsnNode(icst ^ xor));
                 insns.add(new LdcInsnNode(xor));
             } else {
                 insns.add(new LdcInsnNode(xor));
-                insns.add(new LdcInsnNode(lcst ^ xor));
+                insns.add(new LdcInsnNode(icst ^ xor));
             }
-            insns.add(new InsnNode(Opcodes.LXOR));
-            insns.add(new InsnNode(Opcodes.L2D));
+            insns.add(new InsnNode(Opcodes.IXOR));
+            insns.add(new InsnNode(Opcodes.I2D));
             instructions.insertBefore(ldc, insns);
             iter.remove();
         }
