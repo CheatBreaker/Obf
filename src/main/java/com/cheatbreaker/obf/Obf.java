@@ -165,7 +165,6 @@ public class Obf {
     private void obfuscateSipush(Iterator<AbstractInsnNode> iter, IntInsnNode sipush, InsnList instructions) {
         int si = sipush.operand;
         int xor = random.nextInt() & 0xFFFF;
-        System.out.println(xor);
         InsnList insns = new InsnList();
         if (random.nextBoolean()) {
             insns.add(new IntInsnNode(Opcodes.SIPUSH, si ^ xor));
