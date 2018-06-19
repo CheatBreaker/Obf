@@ -5,6 +5,7 @@ import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 
 import java.io.File;
+import java.io.IOException;
 
 public class Main {
     public static void main(String[] args) {
@@ -25,6 +26,12 @@ public class Main {
 
         File inputFile = (File) options.valueOf("input");
         File outputFile = (File) options.valueOf("output");
-        new Obf(inputFile, outputFile);
+
+        try {
+            new Obf(inputFile, outputFile);
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            System.exit(1);
+        }
     }
 }
