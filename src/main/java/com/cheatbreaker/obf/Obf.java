@@ -2,6 +2,7 @@ package com.cheatbreaker.obf;
 
 import com.cheatbreaker.obf.transformer.AccessTransformer;
 import com.cheatbreaker.obf.transformer.ConstantTransformer;
+import com.cheatbreaker.obf.transformer.JunkFieldTransformer;
 import com.cheatbreaker.obf.transformer.ShuffleTransformer;
 import com.cheatbreaker.obf.transformer.StringTransformer;
 import com.cheatbreaker.obf.transformer.Transformer;
@@ -35,6 +36,7 @@ public class Obf {
 
         transformers.add(new ConstantTransformer(this));
         transformers.add(new StringTransformer(this));
+        transformers.add(new JunkFieldTransformer(this));
         transformers.add(new AccessTransformer(this));
         transformers.add(new ShuffleTransformer(this));
 

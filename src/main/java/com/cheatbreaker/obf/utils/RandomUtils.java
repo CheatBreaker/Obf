@@ -12,4 +12,8 @@ public class RandomUtils {
             return Arrays.asList(b, a);
         }
     }
+
+    public static <T> T choice(Random random, List<T> items) {
+        return items.get(random.nextInt(items.size()));
+    }
 }
