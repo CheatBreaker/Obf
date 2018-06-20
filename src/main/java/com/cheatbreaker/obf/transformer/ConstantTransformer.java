@@ -23,6 +23,7 @@ public class ConstantTransformer extends Transformer {
     public void visit(ClassNode classNode) {
         for (MethodNode method : classNode.methods) {
             if (AsmUtils.codeSize(method) > 0x4000) {
+                System.out.println(classNode.name + "." + method.name + method.desc + " is too large, skipping");
                 continue;
             }
             for (Iterator<AbstractInsnNode> iter = method.instructions.iterator(); iter.hasNext(); ) {
