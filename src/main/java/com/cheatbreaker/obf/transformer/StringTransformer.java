@@ -49,9 +49,8 @@ public class StringTransformer extends Transformer {
                         int mask = random.nextInt();
                         int a = random.nextInt() & mask | id;
                         int b = random.nextInt() & ~mask | id;
-                        method.instructions.insertBefore(insn, AsmUtils.pushInt(a));
                         method.instructions.insertBefore(insn, new FieldInsnNode(Opcodes.GETSTATIC, "generated/Strings", "strings", "[Ljava/lang/String;"));
-                        method.instructions.insertBefore(insn, new InsnNode(Opcodes.SWAP));
+                        method.instructions.insertBefore(insn, AsmUtils.pushInt(a));
                         method.instructions.insertBefore(insn, AsmUtils.pushInt(b));
                         method.instructions.insertBefore(insn, new InsnNode(Opcodes.IAND));
                         method.instructions.insertBefore(insn, new InsnNode(Opcodes.AALOAD));
