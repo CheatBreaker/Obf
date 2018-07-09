@@ -14,6 +14,6 @@ public class ShuffleTransformer extends Transformer {
     @Override
     public void visit(ClassNode classNode) {
         Collections.shuffle(classNode.fields, random);
-        Collections.shuffle(classNode.methods);
+        Collections.shuffle(classNode.methods, random);
     }
 }
